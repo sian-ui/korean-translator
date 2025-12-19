@@ -1,35 +1,53 @@
+// app.js
+// 현대국어 → 중세국어 변환기 (rules.csv 기반, 웹버전)
+// - (구) 현대어,중세어,적용방식,우선순위,비고
+// - (신) 현대어,중세어,적용방식,조건,우선순위,비고
+// - 비고에서 "조건=..."도 추출
+// - 조건(and/or): 자음뒤/모음뒤/양성모음뒤/음성모음뒤/ㅣ모음뒤/ㅣ외의모음뒤
+
 let RULES = []; // {src,dst,mode,priority,cond,note}
 
-const statusEl = document.getElementById("status");
-const inputEl = document.getElementById("inputText");
-const outputEl = document.getElementById("outputText");
-const debugEl = document.getElementById("debugMode");
+document.addEventListener("DOMContentLoaded", () => {
+  const statusEl = document.getElementById("status");
+  const inputEl  = document.getElementById("inputText");
+  const outputEl = document.getElementById("outputText");
+  const debugEl  = document.getElementById("debugMode");
 
-document.getElementById("btnTranslate").addEventListener("click", () => {
-  const src = inputEl.value || "";
-  outputEl.value = translate(src, RULES, debugEl.checked);
+  const btnTranslate = document.getElementById("btnTranslate");
+  const btnReload    = document.getElementById("btnReload");
+  const ruleFile     = document.getElementById("ruleFile");
+
+  // 필수 요소 확인(HTML id 오타 방지)
+  if (!statusEl || !inputEl || !outputEl || !btnTranslate || !btnReload || !ruleFile) {
+    console.error("필수 HTML 요소를 찾을 수 없습니다. id를 확인하세요.");
+    return;
+  }
+
+  btnTranslate.addEventListener("click", () => {
+    const src = inputEl.value || "";
+    outputEl.value = translate(src, RULES, debugEl ? debugEl.checked : false);
+  });
+
+  btnReload.addEventListener("click", async () => {
+    await loadRulesFromRepo(statusEl);
+  });
+
+  ruleFile.addEventListener("change", async (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const text = await f.text();
+    RULES = parseRulesCSV(text);
+    statusEl.textContent = `업로드 규칙 로드 완료: ${RULES.length}개`;
+  });
+
+  // 초기 로드
+  loadRulesFromRepo(statusEl);
 });
-
-document.getElementById("btnReload").addEventListener("click", async () => {
-  await loadRulesFromRepo();
-});
-
-document.getElementById("ruleFile").addEventListener("change", async (e) => {
-  const f = e.target.files?.[0];
-  if (!f) return;
-  const text = await f.text();
-  RULES = parseRulesCSV(text);
-  statusEl.textContent = `업로드 규칙 로드 완료: ${RULES.length}개`;
-});
-
-(async function init() {
-  await loadRulesFromRepo();
-})();
 
 // -------------------------
 // 1) rules.csv 로드 (repo에 있는 파일)
 // -------------------------
-async function loadRulesFromRepo() {
+async function loadRulesFromRepo(statusEl) {
   try {
     statusEl.textContent = "rules.csv 불러오는 중...";
     const res = await fetch("./rules.csv", { cache: "no-store" });
@@ -46,36 +64,50 @@ async function loadRulesFromRepo() {
 
 // -------------------------
 // 2) CSV 파서 (5열 또는 6열 지원)
-// 헤더:
-//  - (구) 현대어,중세어,적용방식,우선순위,비고
-//  - (신) 현대어,중세어,적용방식,조건,우선순위,비고
-// 비고에서 "조건=..."도 추출
+// 헤더가 없거나 깨져도 최대한 복구
 // -------------------------
 function parseRulesCSV(csvText) {
   const rows = splitCSV(csvText);
   if (rows.length === 0) return [];
 
-  const header = rows[0].map(h => h.trim());
-  const idx = (name) => header.indexOf(name);
+  // 첫 줄이 헤더인지 판별(현대어/중세어/적용방식 같은 키가 있으면 헤더로 간주)
+  const first = rows[0].map(x => (x ?? "").trim());
+  const looksHeader = first.includes("현대어") || first.includes("중세어") || first.includes("적용방식");
 
+  let header = [];
+  let startRow = 0;
+
+  if (looksHeader) {
+    header = first.map(h => h.trim());
+    startRow = 1;
+  } else {
+    // 헤더가 없으면 구버전 5열로 가정
+    header = ["현대어", "중세어", "적용방식", "우선순위", "비고"];
+    startRow = 0;
+  }
+
+  const idx = (name) => header.indexOf(name);
   const hasCondCol = idx("조건") !== -1;
 
   const out = [];
-  for (let i = 1; i < rows.length; i++) {
+  for (let i = startRow; i < rows.length; i++) {
     const r = rows[i];
     if (!r || r.every(x => (x ?? "").trim() === "")) continue;
 
-    const src = (r[idx("현대어")] ?? r[0] ?? "").trim();
-    const dst = (r[idx("중세어")] ?? r[1] ?? "").trim();
-    const mode = normalizeMode((r[idx("적용방식")] ?? r[2] ?? "").trim());
-    const note = (r[idx("비고")] ?? r[hasCondCol ? 5 : 4] ?? "").trim();
+    // 안전한 가져오기: 헤더가 있든 없든 최대한 맞춰 읽기
+    const src = (getCell(r, idx("현대어"), 0) ?? "").trim();
+    const dst = (getCell(r, idx("중세어"), 1) ?? "").trim();
+    const modeRaw = (getCell(r, idx("적용방식"), 2) ?? "").trim();
+    const mode = normalizeMode(modeRaw);
 
-    let priority = (r[idx("우선순위")] ?? r[hasCondCol ? 4 : 3] ?? "").trim();
-    priority = parseInt(priority, 10);
+    let priorityRaw = (getCell(r, idx("우선순위"), hasCondCol ? 4 : 3) ?? "").trim();
+    let priority = parseInt(priorityRaw, 10);
     if (Number.isNaN(priority)) priority = 0;
 
+    const note = (getCell(r, idx("비고"), hasCondCol ? 5 : 4) ?? "").trim();
+
     let cond = "";
-    if (hasCondCol) cond = ((r[idx("조건")] ?? "") + "").trim();
+    if (hasCondCol) cond = (getCell(r, idx("조건"), 3) ?? "").trim();
     if (!cond) cond = extractCondFromNote(note);
 
     if (!src && !dst) continue;
@@ -95,9 +127,15 @@ function parseRulesCSV(csvText) {
   return out;
 }
 
+function getCell(row, headerIndex, fallbackIndex) {
+  if (headerIndex !== -1) return row[headerIndex];
+  return row[fallbackIndex];
+}
+
 // 아주 단순 CSV split (따옴표 포함 처리)
 function splitCSV(text) {
-  const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+  const norm = (text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const lines = norm.split("\n");
   const rows = [];
   for (const line of lines) {
     if (line.trim() === "") continue;
@@ -112,7 +150,7 @@ function parseCSVLine(line) {
   let inQ = false;
   for (let i=0; i<line.length; i++) {
     const ch = line[i];
-    if (ch === '"' ) {
+    if (ch === '"') {
       if (inQ && line[i+1] === '"') { cur += '"'; i++; }
       else inQ = !inQ;
     } else if (ch === "," && !inQ) {
@@ -127,27 +165,26 @@ function parseCSVLine(line) {
 }
 
 function normalizeMode(m) {
-  if (["그대로","일반","치환","replace"].includes(m)) return "그대로";
-  if (["앞","전","prefix","시작"].includes(m)) return "앞";
-  if (["끝","후","suffix","종결"].includes(m)) return "끝";
-  if (["정규식","regex","re","re.sub"].includes(m)) return "정규식";
-  return m ? "그대로" : "그대로";
+  const s = (m || "").trim();
+  if (["그대로","일반","치환","replace"].includes(s)) return "그대로";
+  if (["앞","전","prefix","시작"].includes(s)) return "앞";
+  if (["끝","후","suffix","종결"].includes(s)) return "끝";
+  if (["정규식","regex","re","re.sub"].includes(s)) return "정규식";
+  // 모르는 값은 보수적으로 그대로
+  return s ? "그대로" : "그대로";
 }
 
 function extractCondFromNote(note) {
-  // 비고에 조건=...이 있으면 추출
+  // 비고에 조건=...이 있으면 추출(한 줄 전체를 먹되 후처리로 정리)
   const m = /조건\s*=\s*([^\n\r]+)/.exec(note || "");
   if (!m) return "";
-  let c = m[1];
-  c = c.replace(/에서쓰일때|에서쓸때|쓸때|일때/g, "");
-  c = c.replace(/[‘’'"\s]/g, "");
-  return c.trim();
+  return cleanupCond(m[1]);
 }
 
 function cleanupCond(cond) {
   return (cond || "")
     .replace(/에서쓰일때|에서쓸때|쓸때|일때/g, "")
-    .replace(/[‘’'"\s]/g, "")
+    .replace(/[‘’'" \t]/g, "")
     .trim();
 }
 
@@ -177,6 +214,7 @@ function getJung(ch) {
   return JUNG_LIST[jungIdx] || "";
 }
 
+// cond를 OR(여러 묶음) -> AND(토큰들) 구조로 파싱
 function parseCondExpr(cond) {
   const c = cleanupCond(cond);
   if (!c) return [];
@@ -184,7 +222,7 @@ function parseCondExpr(cond) {
   return orParts
     .map(p => p.trim())
     .filter(Boolean)
-    .map(p => p.split(/(?:and|AND|And)/).filter(Boolean));
+    .map(p => p.split(/(?:and|AND|And)/).map(x=>x.trim()).filter(Boolean));
 }
 
 function checkOneToken(token, text, idx) {
@@ -225,13 +263,18 @@ function checkCond(cond, text, idx) {
 }
 
 // -------------------------
-// 4) 번역 로직 (조건이 있으면 위치별 검사 후 치환)
+// 4) 번역 로직
+// - src에 "or"가 있으면 대안 목록으로 분리
+// - cond가 있으면 위치별 검사 후 치환(안전)
+// - 앞/끝은 문장부호 보존 토큰화로 개선
 // -------------------------
 function splitSrcAlternatives(src) {
-  if (/(?:or|OR|Or)/.test(src)) {
-    return src.split(/(?:or|OR|Or)/).map(s => s.trim()).filter(Boolean);
+  const s = (src || "").trim();
+  if (!s) return [];
+  if (/(?:or|OR|Or)/.test(s)) {
+    return s.split(/(?:or|OR|Or)/).map(x => x.trim()).filter(Boolean);
   }
-  return [src];
+  return [s];
 }
 
 function conditionalReplace(text, src, dst, cond) {
@@ -250,38 +293,56 @@ function conditionalReplace(text, src, dst, cond) {
   return out;
 }
 
+// 문장부호/공백을 보존하는 토큰화
+function tokenizeKeepPunct(text) {
+  return (text || "").match(/\w+|[^\w\s]+|\s+/gu) || [];
+}
+
 function applyPrefixSuffix(text, src, dst, mode) {
-  // 공백 기준 안전형. (원하면 문장부호 토큰화 버전으로 업그레이드 가능)
-  const words = text.split(" ");
-  const out = words.map(w => {
-    if (mode === "앞" && w.startsWith(src)) return dst + w.slice(src.length);
-    if (mode === "끝" && w.endsWith(src)) return w.slice(0, -src.length) + dst;
-    return w;
-  });
-  return out.join(" ");
+  const tokens = tokenizeKeepPunct(text);
+  const out = [];
+
+  for (const tok of tokens) {
+    // 공백 또는 문장부호는 그대로
+    if (/^\s+$/u.test(tok) || /^[^\w\s]+$/u.test(tok)) {
+      out.push(tok);
+      continue;
+    }
+
+    let w = tok;
+    if (mode === "앞" && w.startsWith(src)) w = dst + w.slice(src.length);
+    else if (mode === "끝" && w.endsWith(src)) w = w.slice(0, -src.length) + dst;
+    out.push(w);
+  }
+
+  return out.join("");
 }
 
 function translate(text, rules, debug=false) {
-  // 웹에서도 NFC 정규화로 안정성 확보
-  text = text.normalize("NFC");
+  text = (text || "").normalize("NFC");
 
-  for (const r of rules) {
+  for (const r of (rules || [])) {
     const alts = splitSrcAlternatives(r.src);
+    if (alts.length === 0) continue;
+
     const before = text;
 
     if (r.mode === "그대로") {
       for (const src of alts) {
-        text = r.cond ? conditionalReplace(text, src, r.dst, r.cond)
-                      : text.split(src).join(r.dst);
+        text = r.cond
+          ? conditionalReplace(text, src, r.dst, r.cond)
+          : text.split(src).join(r.dst);
       }
+
     } else if (r.mode === "앞" || r.mode === "끝") {
       for (const src of alts) {
-        // 앞/끝은 cond를 무시(안전). 원하면 확장 가능.
+        // 앞/끝도 cond를 적용하고 싶으면 확장 가능하지만, 우선 안전형으로는 무시
         text = applyPrefixSuffix(text, src, r.dst, r.mode);
       }
+
     } else if (r.mode === "정규식") {
       if (r.cond) {
-        // 조건이 있으면 안전하게 "문자열 매칭 + 조건 검사"로 처리
+        // 조건이 있으면 안전하게 "문자열 매칭 + 조건 검사"
         for (const src of alts) {
           text = conditionalReplace(text, src, r.dst, r.cond);
         }
@@ -298,9 +359,11 @@ function translate(text, rules, debug=false) {
     }
 
     if (debug && text !== before) {
-      console.log(`[APPLIED] (${r.priority}) ${r.mode}${r.cond ? " cond="+r.cond : ""}: '${r.src}' -> '${r.dst}'`);
+      console.log(
+        `[APPLIED] (${r.priority}) ${r.mode}${r.cond ? " cond="+r.cond : ""}: '${r.src}' -> '${r.dst}'`
+      );
     }
   }
+
   return text;
 }
-app
