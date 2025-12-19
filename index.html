@@ -6,48 +6,51 @@
   <title>현대국어 → 중세국어 변환기</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
-<body>
-  <div class="container">
 
-    <div class="header">
-      <div>
-        <div class="title">현대국어 → 중세국어 변환기</div>
-        <div class="status" id="status">규칙을 불러오는 중...</div>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="topLeft">
+        <h1 class="title">현대국어 → 중세국어 변환기</h1>
+        <p class="subtitle">CSV 규칙(rules.csv) 기반 · GitHub Pages 배포용</p>
       </div>
 
-      <div class="toolbar">
-        <span class="badge">화이트 + 하늘 포인트</span>
-        <label class="switch">
+      <div class="topRight">
+        <span class="pill" id="status">규칙을 불러오는 중...</span>
+        <label class="debug">
           <input type="checkbox" id="debugMode" />
-          디버그
+          디버그(적용 규칙 콘솔 출력)
         </label>
       </div>
-    </div>
+    </header>
 
-    <div class="grid">
-      <div class="card">
+    <main class="grid">
+      <section class="card">
         <div class="cardHead">현대국어 입력</div>
         <textarea id="inputText" placeholder="여기에 현대국어 문장을 입력하세요."></textarea>
-      </div>
+      </section>
 
-      <div class="card">
+      <section class="card">
         <div class="cardHead">중세국어 출력</div>
-        <textarea id="outputText" placeholder="번역 결과가 여기 표시됩니다."></textarea>
-      </div>
-    </div>
+        <textarea id="outputText" placeholder="번역 결과가 여기에 표시됩니다."></textarea>
+      </section>
+    </main>
 
-    <div class="footer">
-      <div class="btns">
-        <button class="primary" id="btnTranslate">번역하기</button>
-        <button id="btnReload">규칙 다시 불러오기</button>
+    <footer class="bottom">
+      <div class="btnRow">
+        <button class="btn primary" id="btnTranslate">번역하기</button>
+        <button class="btn" id="btnReload">규칙 다시 불러오기</button>
       </div>
 
-      <div class="file">
-        <span>CSV 업로드:</span>
+      <div class="fileRow">
+        <span class="fileLabel">CSV 업로드:</span>
         <input type="file" id="ruleFile" accept=".csv" />
       </div>
-    </div>
 
+      <div class="hint">
+        rules.csv는 repo 루트에 두거나, 업로드로 교체할 수 있습니다.
+      </div>
+    </footer>
   </div>
 
   <script src="./app.js"></script>
