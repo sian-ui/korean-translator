@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>현대국어 → 중세국어 변환기</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="header">
+    <h1>현대국어 → 중세국어 변환기</h1>
+    <p class="sub">CSV 규칙(rules.csv) 기반 · GitHub Pages 배포용</p>
+  </header>
+
+  <main class="container">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>현대국어 입력</h2>
+      </div>
+      <textarea id="inputText" placeholder="여기에 현대국어 문장을 입력하세요."></textarea>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>중세국어 출력</h2>
+      </div>
+      <textarea id="outputText" placeholder="번역 결과가 여기에 표시됩니다." readonly></textarea>
+    </section>
+  </main>
+
+  <section class="controls">
+    <button id="btnTranslate">번역하기</button>
+    <button id="btnReload">규칙 다시 불러오기</button>
+
+    <label class="file">
+      규칙 업로드(선택)
+      <input type="file" id="ruleFile" accept=".csv,text/csv" />
+    </label>
+
+    <label class="check">
+      <input type="checkbox" id="debugMode" />
+      디버그(적용 규칙 콘솔 출력)
+    </label>
+
+    <div id="status" class="status">규칙 로딩 중...</div>
+  </section>
+
+  <footer class="footer">
+    <small>rules.csv는 repo 루트에 두거나, 업로드로 교체할 수 있습니다.</small>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
