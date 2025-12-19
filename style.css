@@ -1,72 +1,79 @@
-/* 기본 리셋 */
+/* ===== 기본 ===== */
 * {
   box-sizing: border-box;
-  font-family: "Malgun Gothic", Arial, sans-serif;
+  font-family: "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif;
 }
 
-/* 전체 배경 */
 body {
   margin: 0;
-  background: #f7fbff;
-  color: #1f2937;
+  background: linear-gradient(180deg, #5fa8d3, #1e3a5f);
+  color: #0f172a;
 }
 
-/* 상단 타이틀 */
+/* ===== 상단 ===== */
 header {
-  padding: 24px;
-  text-align: center;
+  padding: 28px 20px 20px;
 }
 
 header h1 {
   margin: 0;
-  color: #2563eb;
+  font-size: 28px;
+  color: #ffffff;
+  font-weight: 800;
 }
 
 header p {
-  margin-top: 8px;
-  color: #475569;
+  margin-top: 6px;
+  color: #e0f2fe;
+  font-size: 14px;
 }
 
-/* 메인 레이아웃 */
+/* ===== 메인 ===== */
 main {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 20px;
 }
 
-/* 카드 레이아웃 */
+/* ===== 패널 레이아웃 ===== */
 .panels {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 20px;
 }
 
-/* 카드 */
+/* ===== 카드 ===== */
 .panel {
   background: #ffffff;
-  border: 1px solid #dbeafe;
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
 }
 
 .panel h2 {
-  margin: 0 0 8px 0;
+  margin: 0 0 10px 0;
+  font-size: 18px;
   color: #2563eb;
-  font-size: 16px;
+  font-weight: 700;
 }
 
-/* 텍스트 영역 */
+/* ===== 텍스트 입력/출력 ===== */
 textarea {
   flex: 1;
   resize: none;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #bfdbfe;
-  background: #f8fbff;
-  font-size: 14px;
-  color: #1f2937;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #c7d2fe;
+  background: #f8fafc;
+  font-size: 16px;       /* ← 글자 크게 */
+  line-height: 1.6;
+  color: #020617;
+}
+
+textarea::placeholder {
+  color: #64748b;
 }
 
 textarea:focus {
@@ -75,6 +82,48 @@ textarea:focus {
   background: #ffffff;
 }
 
-/* 버튼 영역 */
+/* ===== 버튼 ===== */
 .controls {
-  margin-top
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+button {
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+button.secondary {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+button:hover {
+  filter: brightness(1.05);
+}
+
+/* ===== 상태 표시 ===== */
+.status {
+  margin-top: 14px;
+  font-size: 14px;
+  color: #e0f2fe;
+}
+
+/* ===== 모바일 ===== */
+@media (max-width: 900px) {
+  .panels {
+    grid-template-columns: 1fr;
+  }
+
+  header h1 {
+    font-size: 22px;
+  }
+}
