@@ -1,179 +1,202 @@
-/* ===== 기본 ===== */
-* {
-  box-sizing: border-box;
-  font-family: "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif;
+:root{
+  --sky1:#8fd3ff;
+  --sky2:#5fb4e8;
+  --sky3:#2f6fa6;
+
+  --text:#0b1220;
+  --muted:#3b4a5c;
+
+  --card:#ffffff;
+  --cardBorder: rgba(255,255,255,0.55);
+  --shadow: 0 18px 40px rgba(0,0,0,0.22);
+
+  --accent:#2f80ed;
+  --accentHover:#3a93ff;
 }
 
-body {
-  margin: 0;
-  background: linear-gradient(180deg, #5fa8d3, #1e3a5f);
-  color: #0f172a;
+*{ box-sizing:border-box; }
+html, body{ height:100%; }
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, "Malgun Gothic", Arial, sans-serif;
+  color: var(--text);
+
+  /* ✅ 하늘색 배경 */
+  background: radial-gradient(1200px 600px at 30% 10%, var(--sky1), transparent 60%),
+              radial-gradient(900px 500px at 70% 0%, #bfe9ff, transparent 55%),
+              linear-gradient(180deg, var(--sky2) 0%, var(--sky3) 100%);
 }
 
-/* ===== 상단 ===== */
-header {
-  padding: 28px 20px 20px;
+/* 전체 폭/정렬 */
+.wrap{
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 26px 18px 22px;
 }
 
-header h1 {
-  margin: 0;
-  font-size: 28px;
+/* 상단 헤더 */
+.top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.title{
+  margin:0;
+  font-size: 30px;      /* ✅ 글자 큼 */
+  font-weight: 900;
+  letter-spacing: -0.4px;
   color: #ffffff;
+  text-shadow: 0 6px 18px rgba(0,0,0,0.18);
+}
+.subtitle{
+  margin: 6px 0 0 0;
+  color: rgba(255,255,255,0.9);
+  font-size: 14px;
+}
+
+/* 상태/디버그 */
+.topRight{
+  display:flex;
+  align-items:flex-end;
+  gap: 12px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.pill{
+  display:inline-block;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.32);
+  border: 1px solid rgba(255,255,255,0.55);
+  color: #07111f;
+  font-weight: 800;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.15);
+}
+
+.debug{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color: rgba(255,255,255,0.95);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* ✅ “맨 처음 구조” = 좌/우 2개 큰 박스 */
+.grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+/* ✅ 박스는 흰색 */
+.card{
+  background: var(--card);
+  border: 1px solid var(--cardBorder);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  overflow:hidden;
+  min-height: 520px;
+  display:flex;
+  flex-direction:column;
+}
+
+.cardHead{
+  padding: 14px 16px;
+  font-size: 18px;
+  font-weight: 900;
+  color: #0b1220;
+  border-bottom: 1px solid rgba(12, 24, 44, 0.08);
+  background: linear-gradient(180deg, rgba(47,128,237,0.10), rgba(47,128,237,0.02));
+}
+
+textarea{
+  width: 100%;
+  flex:1;
+  border:0;
+  outline:none;
+  resize:none;
+  padding: 16px 16px 18px;
+  font-size: 17px;      /* ✅ 글자 큼 */
+  line-height: 1.7;
+  color: #07111f;
+  background: #ffffff;
+}
+
+textarea::placeholder{
+  color:#8a97a7;
+}
+
+/* 하단 바 */
+.bottom{
+  margin-top: 16px;
+  padding: 14px 14px 12px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.25);
+  border: 1px solid rgba(255,255,255,0.45);
+  box-shadow: 0 12px 26px rgba(0,0,0,0.12);
+}
+
+.btnRow{
+  display:flex;
+  gap: 10px;
+  flex-wrap:wrap;
+  margin-bottom: 10px;
+}
+
+.btn{
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.55);
+  background: rgba(255,255,255,0.70);
+  font-weight: 900;
+  cursor:pointer;
+  color:#0b1220;
+}
+
+.btn.primary{
+  background: linear-gradient(135deg, var(--accent), var(--accentHover));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(47,128,237,0.25);
+}
+
+.btn:hover{ filter: brightness(1.03); }
+
+.fileRow{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-wrap:wrap;
+  color: rgba(255,255,255,0.95);
   font-weight: 800;
 }
 
-header p {
-  margin-top: 6px;
-  color: #e0f2fe;
-  font-size: 14px;
+.fileLabel{
+  color: rgba(255,255,255,0.95);
 }
 
-/* ===== 메인 ===== */
-main {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-/* ===== 패널 레이아웃 ===== */
-.panels {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-/* ===== 카드 ===== */
-.panel {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 18px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-  display: flex;
-  flex-direction: column;
-}
-
-.panel h2 {
-  margin: 0 0 10px 0;
-  font-size: 18px;
-  color: #2563eb;
-  font-weight: 700;
-}
-
-/* ===== 텍스트 입력/출력 ===== */
-textarea {
-  flex: 1;
-  resize: none;
-  padding: 14px;
+input[type="file"]{
+  padding: 8px 10px;
   border-radius: 12px;
-  border: 1px solid #c7d2fe;
-  background: #f8fafc;
-  font-size: 16px;       /* ← 글자 크게 */
-  line-height: 1.6;
-  color: #020617;
+  border: 1px solid rgba(255,255,255,0.55);
+  background: rgba(255,255,255,0.70);
 }
 
-textarea::placeholder {
-  color: #64748b;
-}
-
-textarea:focus {
-  outline: none;
-  border-color: #60a5fa;
-  background: #ffffff;
-}
-
-/* ===== 버튼 ===== */
-.controls {
-  margin-top: 16px;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-button {
-  padding: 12px 18px;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: #ffffff;
-  font-size: 14px;
+.hint{
+  margin-top: 8px;
+  color: rgba(255,255,255,0.92);
+  font-size: 13px;
   font-weight: 700;
 }
 
-button.secondary {
-  background: #e0f2fe;
-  color: #075985;
+/* 모바일 */
+@media (max-width: 900px){
+  .grid{ grid-template-columns: 1fr; }
+  .card{ min-height: 380px; }
+  .title{ font-size: 24px; }
 }
-
-button:hover {
-  filter: brightness(1.05);
-}
-
-/* ===== 상태 표시 ===== */
-.status {
-  margin-top: 14px;
-  font-size: 14px;
-  color: #e0f2fe;
-}
-
-/* ===== 모바일 ===== */
-@media (max-width: 900px) {
-  .panels {
-    grid-template-columns: 1fr;
-  }
-
-  header h1 {
-    font-size: 22px;
-  }
-}
-/* =========================
-   🌤 하늘색 배경으로 교체
-   ========================= */
-body {
-  background: linear-gradient(
-    180deg,
-    #8ecae6 0%,
-    #5fa8d3 40%,
-    #1e3a5f 100%
-  ) !important;
-}
-
-/* =========================
-   ⬜ 입력/출력 박스 흰색
-   ========================= */
-.panel {
-  background: #ffffff !important;
-  color: #0f172a !important;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-}
-
-/* =========================
-   ✍️ 텍스트 가독성 강화
-   ========================= */
-.panel h2 {
-  color: #1d4ed8 !important;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-textarea {
-  background: #f8fafc !important;
-  color: #020617 !important;
-  font-size: 16px;
-  line-height: 1.6;
-  border: 1px solid #c7d2fe;
-}
-
-textarea::placeholder {
-  color: #64748b;
-}
-
-/* =========================
-   🔵 버튼은 기존 느낌 유지
-   ========================= */
-button {
-  font-size: 14px;
-  font-weight: 700;
-}
-
